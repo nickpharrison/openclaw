@@ -804,6 +804,9 @@ export function collectSandboxDangerousConfigFindings(cfg: OpenClawConfig): Secu
         continue;
       }
       if (blocked.kind === "non_absolute") {
+        if (docker.dangerouslyAllowNamedVolumes === true) {
+          continue;
+        }
         findings.push({
           checkId: "sandbox.bind_mount_non_absolute",
           severity: "warn",
@@ -811,7 +814,7 @@ export function collectSandboxDangerousConfigFindings(cfg: OpenClawConfig): Secu
           detail:
             `${source}.binds contains "${bind}" which uses source path "${blocked.sourcePath}". ` +
             "Non-absolute bind sources are hard to validate safely and may resolve unexpectedly.",
-          remediation: `Rewrite "${bind}" to use an absolute host path (for example: /home/user/project:/project:ro).`,
+          remediation: `Rewrite "${bind}" to use an absolute host path (for example: /home/user/project:/project:ro), or set dangerouslyAllowNamedVolumes=true to allow Docker named volumes.`,
         });
         continue;
       }

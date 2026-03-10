@@ -338,6 +338,7 @@ export function buildSandboxCreateArgs(params: {
     dangerouslyAllowContainerNamespaceJoin:
       params.allowContainerNamespaceJoin ??
       params.cfg.dangerouslyAllowContainerNamespaceJoin === true,
+    dangerouslyAllowNamedVolumes: params.cfg.dangerouslyAllowNamedVolumes === true,
   });
 
   const createdAtMs = params.createdAtMs ?? Date.now();

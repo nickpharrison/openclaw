@@ -57,6 +57,12 @@ export type SandboxDockerSettings = {
    * Default behavior blocks container namespace joins to preserve sandbox isolation.
    */
   dangerouslyAllowContainerNamespaceJoin?: boolean;
+  /**
+   * Dangerous override: allow Docker named volumes as bind mount sources
+   * (sources that don't start with "/"). By default only absolute POSIX
+   * host paths are accepted.
+   */
+  dangerouslyAllowNamedVolumes?: boolean;
 };
 
 export type SandboxBrowserSettings = {

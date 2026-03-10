@@ -40,6 +40,7 @@ export type ValidateBindMountsOptions = {
   allowedSourceRoots?: string[];
   allowSourcesOutsideAllowedRoots?: boolean;
   allowReservedContainerTargets?: boolean;
+  allowNamedVolumes?: boolean;
 };
 
 export type ValidateNetworkModeOptions = {
@@ -250,6 +251,11 @@ export function validateBindMounts(
     // Fast string-only check (covers .., //, ancestor/descendant logic).
     const blocked = getBlockedBindReason(bind);
     if (blocked) {
+      // When named volumes are allowed, skip the non-absolute check (Docker named volumes
+      // don't start with "/").
+      if (blocked.kind === "non_absolute" && options?.allowNamedVolumes) {
+        continue;
+      }
       throw formatBindBlockedError({ bind, reason: blocked });
     }
 
@@ -332,9 +338,13 @@ export function validateSandboxSecurity(
     seccompProfile?: string;
     apparmorProfile?: string;
     dangerouslyAllowContainerNamespaceJoin?: boolean;
+    dangerouslyAllowNamedVolumes?: boolean;
   } & ValidateBindMountsOptions,
 ): void {
-  validateBindMounts(cfg.binds, cfg);
+  validateBindMounts(cfg.binds, {
+    ...cfg,
+    allowNamedVolumes: cfg.allowNamedVolumes ?? cfg.dangerouslyAllowNamedVolumes === true,
+  });
   validateNetworkMode(cfg.network, {
     allowContainerNamespaceJoin: cfg.dangerouslyAllowContainerNamespaceJoin === true,
   });
