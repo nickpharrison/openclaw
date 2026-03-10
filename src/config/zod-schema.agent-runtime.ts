@@ -134,6 +134,7 @@ export const SandboxDockerSchema = z
     dangerouslyAllowReservedContainerTargets: z.boolean().optional(),
     dangerouslyAllowExternalBindSources: z.boolean().optional(),
     dangerouslyAllowContainerNamespaceJoin: z.boolean().optional(),
+    dangerouslyAllowNamedVolumes: z.boolean().optional(),
   })
   .strict()
   .superRefine((data, ctx) => {
@@ -151,12 +152,16 @@ export const SandboxDockerSchema = z
         const firstColon = bind.indexOf(":");
         const source = (firstColon <= 0 ? bind : bind.slice(0, firstColon)).trim();
         if (!source.startsWith("/")) {
+          if (data.dangerouslyAllowNamedVolumes) {
+            continue;
+          }
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             path: ["binds", i],
             message:
               `Sandbox security: bind mount "${bind}" uses a non-absolute source path "${source}". ` +
-              "Only absolute POSIX paths are supported for sandbox binds.",
+              "Only absolute POSIX paths are supported for sandbox binds. " +
+              "Set dangerouslyAllowNamedVolumes=true to allow Docker named volumes.",
           });
         }
       }
